@@ -14,7 +14,7 @@ A dead simple Go web application that serves HTMX files. Currently under constru
     - I just don't want to make .css files
 5. [DaisyUI](https://daisyui.com/) as component library
     - I just don't want to write tailwind classes
-6. [Air](https://github.com/cosmtrek/air)
+6. [Air](https://github.com/cosmtrek/air) as live reload
     - It's the simplest Go live reload package I've found. Also very customizable.
-7. [Goldmark](https://github.com/yuin/goldmark)
+7. [Goldmark](https://github.com/yuin/goldmark) as markdown parser
     - Most maintained markdown parser with plenty of extensions.
