@@ -1,0 +1,9 @@
+package layouts
+templ Main(contents templ.Component) {
+  <div hx-boost="true" class="flex flex-col min-h-screen h-max items-center lg:max-w-screen-lg w-screen lg:w-full">
+    <a href="/" class="mb-2 pb-2 text-5xl pt-8">HTMX + Chi</a>
+    <article id="content" class="bg-gray-800 rounded-xl my-4 w-full max-w-screen-md lg:max-w-none">
+      @contents
+    </article>
+  </div>
+}
