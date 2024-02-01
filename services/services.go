@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func NewServer(d *db.Database, Addr string) *http.Server {
+func NewServer(Addr string, d *db.Database, rc *db.RedisClient) *http.Server {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
@@ -18,7 +18,7 @@ func NewServer(d *db.Database, Addr string) *http.Server {
 	lib.FileServer(r)
 
 	// routes
-	c := controllers.NewController(d)
+	c := controllers.NewController(d, rc)
 	r.Get("/", c.Root)
 	r.Get("/md", c.Md)
 	r.Get("/{fileName}", c.MdPage)

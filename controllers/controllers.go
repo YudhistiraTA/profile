@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/YudhistiraTA/profile/lib"
 	"github.com/YudhistiraTA/profile/views/components"
 	"github.com/YudhistiraTA/profile/views/layouts"
+	"github.com/a-h/templ"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,12 +20,14 @@ import (
 )
 
 type Controller struct {
-	DB *db.Database
+	DB    *db.Database
+	Redis *db.RedisClient
 }
 
-func NewController(DB *db.Database) *Controller {
+func NewController(DB *db.Database, RC *db.RedisClient) *Controller {
 	return &Controller{
-		DB: DB,
+		DB:    DB,
+		Redis: RC,
 	}
 }
 
@@ -35,6 +39,14 @@ const (
 func WriteErrorResponse(w http.ResponseWriter, statusCode int, msg string, err error) {
 	log.Println(err)
 	http.Error(w, msg, statusCode)
+}
+
+func htmxRes(w http.ResponseWriter, r *http.Request, hxRequest string, render templ.Component) {
+	if hxRequest == "true" {
+		lib.Htmx(w, r, render)
+	} else {
+		lib.Htmx(w, r, layouts.Main(render))
+	}
 }
 
 func (c *Controller) Root(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +71,18 @@ func (c *Controller) Md(w http.ResponseWriter, r *http.Request) {
 }
 func (c *Controller) MdPage(w http.ResponseWriter, r *http.Request) {
 	fileName := chi.URLParam(r, "fileName")
+	hxRequest := r.Header.Get("HX-Request")
+	redisRes := c.Redis.HGetAll(fileName).Val()
+	if len(redisRes) > 0 {
+		body, okBody := redisRes["body"]
+		toc, okToc := redisRes["toc"]
+		if okBody && okToc {
+			render := components.MdPage(fileName, body, toc)
+			fmt.Printf("Redis")
+			htmxRes(w, r, hxRequest, render)
+			return
+		}
+	}
 	var result bson.M
 
 	filter := bson.D{primitive.E{Key: "slug", Value: fileName}}
@@ -77,13 +101,13 @@ func (c *Controller) MdPage(w http.ResponseWriter, r *http.Request) {
 		WriteErrorResponse(w, http.StatusInternalServerError, internalServerErrorMsg, err)
 		return
 	}
-
 	body, toc := lib.MdParse(content)
-	render := components.MdPage(fileName, body, toc)
-	hxRequest := r.Header.Get("HX-Request")
-	if hxRequest == "true" {
-		lib.Htmx(w, r, render)
-	} else {
-		lib.Htmx(w, r, layouts.Main(render))
+	redisFields := map[string]interface{}{
+		"body": body,
+		"toc":  toc,
 	}
+	c.Redis.HSet(fileName, redisFields)
+	render := components.MdPage(fileName, body, toc)
+	fmt.Printf("Non-redis")
+	htmxRes(w, r, hxRequest, render)
 }

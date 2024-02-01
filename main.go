@@ -34,19 +34,21 @@ func main() {
 	defer cancel()
 
 	// db init
-	db, err := db.NewDatabase(ctx)
+	dbClient, err := db.NewDatabase(ctx)
 	if err != nil {
 		log.Fatalf("db init failed: %v", err)
 	}
 	// db ping
-	if err := db.Ping(ctx); err != nil {
+	if err := dbClient.Ping(ctx); err != nil {
 		log.Fatalf("db ping failed: %v", err)
 	}
-	defer db.Close(ctx)
+	defer dbClient.Close(ctx)
+
+	// redis init
+	redis := db.NewRedis(ctx, os.Getenv("REDIS"))
 
 	// server init
-	addr := os.Getenv("ADDRESS")
-	srv := services.NewServer(db, addr)
+	srv := services.NewServer(os.Getenv("ADDRESS"), dbClient, redis)
 	rungroup, ctx := errgroup.WithContext(ctx)
 	rungroup.Go(func() error {
 		if er := srv.ListenAndServe(); er != nil && !errors.Is(er, http.ErrServerClosed) {
