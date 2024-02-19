@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"fmt"
@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/YudhistiraTA/profile/db"
-	"github.com/YudhistiraTA/profile/lib"
-	"github.com/YudhistiraTA/profile/views/components"
-	"github.com/YudhistiraTA/profile/views/layouts"
+	"github.com/YudhistiraTA/profile/view"
+	"github.com/YudhistiraTA/profile/view/template/component"
+	"github.com/YudhistiraTA/profile/view/template/layout"
 	"github.com/a-h/templ"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
@@ -43,14 +43,14 @@ func WriteErrorResponse(w http.ResponseWriter, statusCode int, msg string, err e
 
 func htmxRes(w http.ResponseWriter, r *http.Request, hxRequest string, render templ.Component) {
 	if hxRequest == "true" {
-		lib.Htmx(w, r, render)
+		view.Htmx(w, r, render)
 	} else {
-		lib.Htmx(w, r, layouts.Main(render))
+		view.Htmx(w, r, layout.Main(render))
 	}
 }
 
 func (c *Controller) Root(w http.ResponseWriter, r *http.Request) {
-	lib.Htmx(w, r, layouts.Main(components.Main()))
+	view.Htmx(w, r, layout.Main(component.Main()))
 }
 func (c *Controller) Md(w http.ResponseWriter, r *http.Request) {
 	dir := "./data"
@@ -77,7 +77,7 @@ func (c *Controller) MdPage(w http.ResponseWriter, r *http.Request) {
 		body, okBody := redisRes["body"]
 		toc, okToc := redisRes["toc"]
 		if okBody && okToc {
-			render := components.MdPage(fileName, body, toc)
+			render := component.MdPage(fileName, body, toc)
 			fmt.Printf("Redis")
 			htmxRes(w, r, hxRequest, render)
 			return
@@ -101,13 +101,13 @@ func (c *Controller) MdPage(w http.ResponseWriter, r *http.Request) {
 		WriteErrorResponse(w, http.StatusInternalServerError, internalServerErrorMsg, err)
 		return
 	}
-	body, toc := lib.MdParse(content)
+	body, toc := view.MdParse(content)
 	redisFields := map[string]interface{}{
 		"body": body,
 		"toc":  toc,
 	}
 	c.Redis.HSet(fileName, redisFields)
-	render := components.MdPage(fileName, body, toc)
+	render := component.MdPage(fileName, body, toc)
 	fmt.Printf("Non-redis")
 	htmxRes(w, r, hxRequest, render)
 }

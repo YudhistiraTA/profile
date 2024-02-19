@@ -1,13 +1,12 @@
-package lib
+package view
 
 import (
 	"net/http"
 
-	"github.com/YudhistiraTA/profile/views"
-
+	"github.com/YudhistiraTA/profile/view/template"
 	"github.com/a-h/templ"
 )
 
 func Htmx(w http.ResponseWriter, r *http.Request, component templ.Component) {
-	templ.Handler(views.Index(component)).ServeHTTP(w, r)
+	templ.Handler(template.Index(component)).ServeHTTP(w, r)
 }

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/YudhistiraTA/profile/db"
-	"github.com/YudhistiraTA/profile/services"
+	"github.com/YudhistiraTA/profile/service"
 	"github.com/joho/godotenv"
 	"golang.org/x/sync/errgroup"
 )
@@ -48,7 +48,7 @@ func main() {
 	redis := db.NewRedis(ctx, os.Getenv("REDIS"))
 
 	// server init
-	srv := services.NewServer(os.Getenv("ADDRESS"), dbClient, redis)
+	srv := service.NewServer(os.Getenv("ADDRESS"), dbClient, redis)
 	rungroup, ctx := errgroup.WithContext(ctx)
 	rungroup.Go(func() error {
 		if er := srv.ListenAndServe(); er != nil && !errors.Is(er, http.ErrServerClosed) {

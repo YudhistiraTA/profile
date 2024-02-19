@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/a-h/templ v0.2.543
+	github.com/andybalholm/brotli v1.1.0
 	github.com/go-chi/chi v1.5.5
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.4.0
