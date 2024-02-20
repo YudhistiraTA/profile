@@ -9,8 +9,7 @@ import (
 func BrotliMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		br := brotli.HTTPCompressor(w, r)
-		defer br.Close()
-		w.Header().Set("Content-Encoding", "br")
+		br.Close()
 		next.ServeHTTP(w, r)
 	})
 }
