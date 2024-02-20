@@ -13,7 +13,7 @@ import (
 
 func FileServer(r chi.Router) {
 	workDir, _ := os.Getwd()
-	filesDir := http.Dir(filepath.Join(workDir, "service", "static"))
+	filesDir := http.Dir(filepath.Join(workDir, "static"))
 	fileServer := http.StripPrefix("/static", http.FileServer(filesDir))
 	staticRouter := chi.NewRouter()
 	staticRouter.Use(BrotliMiddleware)
